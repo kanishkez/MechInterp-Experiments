@@ -158,6 +158,12 @@ With a solid understanding of how SFT changes a model, we turn to the core resea
 * **Observation:** Intervening at the correct layers successfully modifies reasoning behavior, establishing a causal relationship between the latent state and the reasoning outcome.
 * **Conclusion:** This proves the **RLVR State-Selection Hypothesis**: RLVR improves reasoning not by instantiating novel circuits, but by changing early state transitions to increase the occupancy of a pre-existing distributed reasoning state.
 
+**Verified Exp14: Causal Trajectory Transfer (Corrected)**
+* **What it tested:** Whether RLVR's frontier capability can be transferred into SFT by patching early-to-mid residual-stream activations, using one self-consistent HF decode pipeline for both labeling and intervention.
+* **What was done:** I rebuilt the GSM8K quadrants, ran a checkpointed live marimo pipeline, and logged the full batch-by-batch sweep to durable files in `/marimo` before pulling the final JSON into the repo.
+* **Headline result:** RLVR→SFT improved `D_Frontier` accuracy from `15.0% [6.7, 23.3]` to `33.3% [21.7, 45.0]` at `L0-12` and `43.3% [31.7, 56.7]` at `L0-31`. SFT→RLVR reduced `76.7% [66.7, 86.7]` to `56.7% [43.3, 68.3]` at `L0-12` and `46.7% [35.0, 58.3]` at `L0-31`.
+* **Conclusion:** The earlier 75%/0% claim is retracted. The verified result supports a partially transferable, distributed trajectory shift rather than a single sharp bottleneck at L12.
+
 ---
 
 ### Conclusions (Base vs Instruct)
@@ -176,3 +182,5 @@ These empirical findings perfectly match the emerging consensus in the mechanist
 3. **Template Triggers and Pre-existing Circuits**: Our discovery that the `<|im_start|>` chat template acts as a conditional routing switch—rather than teaching the model new concepts from scratch—mirrors research on activation steering and prompting. It confirms that SFT largely repurposes and conditionally activates pre-existing circuits discovered during pre-training, a phenomenon often referred to as the "Alignment Ceiling."
 
 Similarly, Reinforcement Learning with Verifiable Rewards (RLVR) does not create entirely new reasoning circuits from scratch. Instead, it alters the early-layer state transition probabilities, ensuring the model more reliably enters a pre-existing "success state" that was already representable within the SFT network.
+
+The corrected exp14 run refines this picture: the state/trajectory change is real and causal, but it is only partially transferable and appears distributed across layers rather than locked to a single transition point.

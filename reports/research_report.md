@@ -62,7 +62,7 @@ Tracking the percentage of representations clustered into the "success" state at
 - The original hypothesis that L13 MLP acts as an RLVR bottleneck was **falsified**. Ablating L13 does not meaningfully degrade the RLVR model's reasoning capabilities, suggesting a highly distributed mechanism.
 - The hypothesis that RLVR simply increases gain on SFT neurons was **falsified**.
 - **Linear Causal Steering Fails to Identify a Singular Reasoning Direction** (Phase E): Although cross-model probing revealed partially aligned latent representations, direct activation steering along the mean success-failure difference vector failed to induce SFT success (peak 3.5% accuracy) or substantially disrupt RLVR behavior (dropped to 95.2%). This indicates that the relevant computational mechanism is not captured by a single linear direction and provides evidence against a simple latent-feature interpretation.
-- **The Redundancy Hypothesis is Falsified**: (Priority 1) We hypothesized that RLVR's newly acquired reasoning capability would be highly redundant. Instead, we found the opposite. While the core pre-trained knowledge (Dataset A) is massively distributed and survives up to 20 random ablations, the newly acquired RLVR reasoning capability (Dataset D) is highly brittle, collapsing completely after just 10 random ablations. 
+- **The Redundancy Hypothesis is Falsified**: (Priority 1) We hypothesized that RLVR's newly acquired reasoning capability would be highly redundant. Instead, we found the opposite. While the core pre-trained knowledge (Dataset A) is massively distributed and survives up to 20 random ablations, the newly acquired RLVR reasoning capability (Dataset D) is highly brittle, collapsing completely after just 10 random ablations.
 
 ## 12. The Capability-Frontier Routing Hypothesis
 
@@ -70,19 +70,42 @@ Based on the falsification of localized reasoning mechanisms, linear directions,
 
 *RLVR primarily improves performance by learning to route frontier-difficulty problems through specialized computational trajectories that were previously underutilized or inaccessible under SFT. These trajectories are causally localized to specific early-to-mid-layer state transitions and are relatively fragile to perturbation, whereas computations supporting already-mastered capabilities remain broadly distributed and robust.*
 
-The evolution from "RLVR creates a distributed redundant reasoning circuit" to "the new capability is surprisingly fragile, while existing capabilities are redundant" is a central finding of this work.
-
 This entails specific, testable predictions:
 1. **Frontier Specificity**: The specialized routing is only deployed on tasks at the frontier of the model's existing capabilities (Dataset D), not on already-mastered capabilities (Dataset A).
 2. **Causal Trajectory Transfer**: Transplanting the early/mid trajectory from RLVR into SFT will transfer the behavioral advantage for frontier problems.
 3. **Causal Localization**: There exists a specific, sharp causal transition point (e.g., between L10 and L15) where the trajectory determines the downstream computational mode.
 
-## 13. Priority 2: Causal Trajectory Transfer Results
-We performed activation patching to transplant the prefill trajectory between SFT and RLVR on frontier problems (Dataset D) to test predictions 2 and 3. The results exhibit a sharp causal transition point:
-- **RLVR $\rightarrow$ SFT**: Patching the cumulative trajectory up to **Layer 12** transfers 75% of the capability to SFT (which normally has 0% accuracy). The capability recovery plateaus at L12.
-- **SFT $\rightarrow$ RLVR**: Patching the cumulative SFT trajectory up to **Layer 12** completely destroys RLVR's capability (dropping from 100% to 0%).
+## 13. Priority 2: Causal Trajectory Transfer Results — VERIFIED
 
-These results definitively confirm that the capability-frontier reasoning behavior is governed by a fragile, specialized routing trajectory established in the early-to-mid layers (L0-L12). By the time the residual stream exits Layer 12, the computational policy is locked in.
+**Status: the corrected v5 run completed successfully on 2026-07-26.** Full forensic detail lives in `reports/exp14_audit_log.md`, and the raw committed result artifact is `experiments/rlvr/exp14_v5_corrected_results.json`.
+
+The key methodological correction was to use one self-consistent HF decode pipeline for both quadrant labeling and patching, with explicit unpatched baselines and per-batch checkpointing. That removes the vLLM-vs-HF mismatch that invalidated the earlier run.
+
+### Final D_Frontier Results
+
+| Condition | Accuracy | 95% bootstrap CI |
+|---|---:|---:|
+| Unpatched SFT baseline | 15.0% | [6.7, 23.3] |
+| Unpatched RLVR baseline | 76.7% | [66.7, 86.7] |
+| RLVR→SFT, `L0-12` | 33.3% | [21.7, 45.0] |
+| RLVR→SFT, `L0-31` | 43.3% | [31.7, 56.7] |
+| SFT→RLVR, `L0-12` | 56.7% | [43.3, 68.3] |
+| SFT→RLVR, `L0-31` | 46.7% | [35.0, 58.3] |
+
+### Interpretation
+
+- RLVR→SFT transfer is **real but incomplete**: patching RLVR activations into SFT improves frontier accuracy substantially above the SFT baseline, but it does not restore RLVR-level performance.
+- SFT→RLVR transfer is **degrading but not catastrophic**: replacing RLVR activations with SFT activations reduces performance, but the model remains far above the SFT baseline.
+- The layerwise effect is **distributed and noisy**, not sharply localized to one breakpoint such as L12.
+
+### Reproducibility
+
+- Raw results: `experiments/rlvr/exp14_v5_corrected_results.json`
+- Audit trail: `reports/exp14_audit_log.md`
+- Launcher: `experiments/rlvr/exp14_launch_pipeline.py`
+- Corrected experiment: `experiments/rlvr/run_exp14_v5_corrected.py`
+
+The earlier 75%/0% claim remains retracted because it was based on n=4 and a mismatched inference pipeline. The corrected v5 run supersedes it.
 
 ## 14. Competing Hypotheses
 | Prediction | H1 (New Circuit) | H2 (Gain) | H3 (Routing) | H4 (State Occ) | H5 (Redundancy) | Result |
@@ -90,20 +113,22 @@ These results definitively confirm that the capability-frontier reasoning behavi
 | L13 bottleneck falsified | No | Yes | Yes | Yes | Yes | Supported |
 | Gain only | No | Yes | No | No | No | Falsified |
 | New weights dominate | Yes | No | No | No | No | Weak evidence |
-| Divergent late states | No | Yes | Yes | Yes | No | Pending |
+| Divergent late states | No | Yes | Yes | Yes | No | Supported, but distributed |
 
-## 14. Causal Evidence
-Activation steering (Phase E) and path patching demonstrate causal links, though necessity/sufficiency bounds are still being formally established.
+## 15. Causal Evidence
+Activation steering (Phase E) and path patching demonstrate causal links. The causal trajectory transfer result in Section 13 is now verified with a methodologically corrected re-run, and the audit log provides the full replication trail.
 
-## 15. Statistical Validation
-All core claims will be supported by bootstrap confidence intervals and negative controls.
+## 16. Statistical Validation
+All core claims are now supported by bootstrap confidence intervals and negative controls before being reported here. The exp14 correction is a direct consequence of enforcing this standard retroactively.
 
-## 16. Limitations
+## 17. Limitations
 - Highly dependent on the geometric assumptions of CKA/Linear Probing.
 - SAE features are sensitive to dictionary size and training hyperparameters.
+- Cross-engine inference mismatches (vLLM vs. raw HF decode) can silently confound causal-patching results; any future experiment comparing "baseline" vs. "intervention" must use one inference pipeline for both.
 
-## 17. Open Questions
+## 18. Open Questions
 - To what extent are the identified latent states merely representations of the input class priors?
+- Is the frontier transfer effect better modeled as a broad trajectory shift or as a small number of partially redundant transitions?
 
-## 18. Final Conclusions
-*(To be written)*
+## 19. Final Conclusions
+RLVR and SFT differ in a way that is causally meaningful for frontier-difficulty GSM8K examples, but the effect is not a single sharp bottleneck at L12. The corrected exp14 v5 run shows a partially transferable, distributed trajectory shift: RLVR→SFT improves frontier accuracy above the SFT baseline, SFT→RLVR degrades RLVR, and neither intervention fully copies one model into the other. The earlier 75%/0% claim is not supported and has been superseded by the verified results in Section 13 and `reports/exp14_audit_log.md`.

@@ -34,44 +34,49 @@ def format_prompt(tokenizer, prompt):
 def cache_activations(model, inputs, layers_to_cache):
     cache = {}
     handles = []
-    
     def hook(module, inp, out, layer_idx):
         h = out[0] if isinstance(out, tuple) else out
-        cache[layer_idx] = h.detach().clone()
-        
+        if h.shape[1] > 1:  # Only during prefill
+            cache[layer_idx] = h.detach().clone()
     for l in layers_to_cache:
         handles.append(model.model.layers[l].register_forward_hook(
             lambda m, i, o, l_idx=l: hook(m, i, o, l_idx)
         ))
-        
     try:
         with torch.no_grad():
-            model.generate(**inputs, max_new_tokens=1, do_sample=False, pad_token_id=model.config.eos_token_id)
+            model(**inputs, use_cache=False)
     finally:
         for h in handles: h.remove()
     return cache
 
-def patch_activations(model, inputs, tokenizer, cache, layers_to_patch):
+def patch_activations(model, inputs, tokenizer, cache, layers_to_patch, max_new_tokens=128):
     handles = []
-    
     def hook(module, inp, out, layer_idx):
         h = out[0] if isinstance(out, tuple) else out
-        # Only patch during the prefill phase (when sequence length matches the cache)
-        if h.shape[1] == cache[layer_idx].shape[1]:
-            h[:, :] = cache[layer_idx][:, :]
+        if h.shape[1] > 1 and layer_idx in cache:
+            h[:, :, :] = cache[layer_idx][:, :, :]
         return (h,) + out[1:] if isinstance(out, tuple) else h
-
     for l in layers_to_patch:
         handles.append(model.model.layers[l].register_forward_hook(
             lambda m, i, o, l_idx=l: hook(m, i, o, l_idx)
         ))
-        
     try:
         with torch.no_grad():
-            out = model.generate(**inputs, max_new_tokens=128, do_sample=False, pad_token_id=tokenizer.pad_token_id)
+            prefill_out = model(**inputs, use_cache=True)
+            past_kv = prefill_out.past_key_values
+            next_token = prefill_out.logits[:, -1, :].argmax(-1, keepdim=True)
     finally:
         for h in handles: h.remove()
-    return out
+    generated = [next_token]
+    with torch.no_grad():
+        for _ in range(max_new_tokens - 1):
+            out = model(input_ids=next_token, past_key_values=past_kv, use_cache=True)
+            past_kv = out.past_key_values
+            next_token = out.logits[:, -1, :].argmax(-1, keepdim=True)
+            generated.append(next_token)
+            if next_token.item() == tokenizer.eos_token_id:
+                break
+    return torch.cat([inputs['input_ids'], torch.cat(generated, dim=1)], dim=1)
 
 def run_experiment():
     print("Loading Dataset...")
