@@ -1,0 +1,99 @@
+{
+  "experiment": "exp18_difficulty_continuum",
+  "status": "completed",
+  "session": "s_her97l",
+  "source": "live marimo notebook",
+  "n_examples": 125,
+  "quadrants": {
+    "C_Fail": 100,
+    "A_Core": 19,
+    "D_Frontier": 5,
+    "B_SFT_Pass": 1
+  },
+  "layer_peaks": {
+    "cosine_peak_layer": 31,
+    "l2_peak_layer": 31,
+    "top_layers_by_cosine_mean": [31, 30, 20, 23, 21],
+    "top_layers_by_l2_mean": [31, 30, 20, 17, 23]
+  },
+  "quadrant_summary": {
+    "A_Core": {
+      "avg_cos": 0.03290272376647121,
+      "avg_l2": 0.24499478324095866,
+      "layer0_cos": 0.0006085602860701712,
+      "layer31_cos": 0.08033484847922075,
+      "layer0_l2": 0.03505584891689451,
+      "layer31_l2": 0.3898846663926777
+    },
+    "B_SFT_Pass": {
+      "avg_cos": 0.032157713547348976,
+      "avg_l2": 0.244119668379426,
+      "layer0_cos": 0.0005867481231689453,
+      "layer31_cos": 0.08981895446777344,
+      "layer0_l2": 0.0343930758535862,
+      "layer31_l2": 0.4142710566520691
+    },
+    "C_Fail": {
+      "avg_cos": 0.0257643423974514,
+      "avg_l2": 0.21414920728304424,
+      "layer0_cos": 0.0006493276357650757,
+      "layer31_cos": 0.0578639942407608,
+      "layer0_l2": 0.036191843636333945,
+      "layer31_l2": 0.3317587023973465
+    },
+    "D_Frontier": {
+      "avg_cos": 0.03977429121732712,
+      "avg_l2": 0.25326283506583425,
+      "layer0_cos": 0.0006521821022033691,
+      "layer31_cos": 0.0861891269683838,
+      "layer0_l2": 0.03627307116985321,
+      "layer31_l2": 0.391493958234787
+    }
+  },
+  "difficulty_correlations": {
+    "pearson_avg_cos": -0.150950335322261,
+    "pearson_avg_l2": -0.21819261201811255,
+    "spearman_avg_cos": -0.08488609657063821,
+    "spearman_avg_l2": -0.09765126961627707
+  },
+  "difficulty_bins": [
+    {
+      "bin": 1,
+      "n": 31,
+      "difficulty_min": 196,
+      "difficulty_max": 1116,
+      "cos_mean": 0.030162269129387794,
+      "l2_mean": 0.23395834447470523
+    },
+    {
+      "bin": 2,
+      "n": 31,
+      "difficulty_min": 1117,
+      "difficulty_max": 1212,
+      "cos_mean": 0.023337412865892533,
+      "l2_mean": 0.2055332930683489
+    },
+    {
+      "bin": 3,
+      "n": 31,
+      "difficulty_min": 1229,
+      "difficulty_max": 1342,
+      "cos_mean": 0.026186722360791698,
+      "l2_mean": 0.2144076231033391
+    },
+    {
+      "bin": 4,
+      "n": 32,
+      "difficulty_min": 1348,
+      "difficulty_max": 1832,
+      "cos_mean": 0.03007301955949515,
+      "l2_mean": 0.22841807417353266
+    }
+  ],
+  "interpretation": [
+    "Divergence concentrates in late layers.",
+    "Layer 31 is the strongest separation point.",
+    "Difficulty is not monotonically correlated with average divergence.",
+    "Frontier examples show the highest average divergence, but the frontier sample is small."
+  ]
+}

@@ -3,6 +3,8 @@
 ## Base vs Instruct
 The purpose of these series of experiments was for me to get familiar with mech interp techniques. This is also a test run for my actual experiment that I want to conduct: Base vs RL, to see what exactly changes when you RL a model, what changes mechanistically.
 
+For the full chronological experiment log, see [`reports/experiment_log.md`](reports/experiment_log.md).
+
 So let's see what changes when you SFT a model.
 I chose to investigate Qwen 2.5 Base and Qwen 2.5 Instruct.
 We get started with our first series of experiments in which our goal is to understand how exactly an SFT model is different from a base model. To do this, I generated 400 perfectly matched prompts covering 4 domains (Code, Creative, Reasoning, and QA) with exact token lengths so we could directly compare their internal streams.

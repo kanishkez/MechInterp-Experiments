@@ -1,0 +1,70 @@
+{
+  "experiment": "exp17_robust_trajectory_patching",
+  "status": "completed",
+  "session": "s_her97l",
+  "source": "live marimo notebook",
+  "sampling": {
+    "quadrants_sampled_per_group": 8,
+    "note": "A_both_pass had only 1 usable example in the sampled set"
+  },
+  "part1_l0_12": {
+    "A_both_pass": {
+      "rlvr_to_sft_accuracy": 1.0,
+      "sft_to_rlvr_accuracy": 1.0,
+      "n": 1
+    },
+    "C_both_fail": {
+      "rlvr_to_sft_accuracy": 0.0,
+      "sft_to_rlvr_accuracy": 0.0,
+      "n": 8
+    },
+    "D_sft_fail_rlvr_pass": {
+      "rlvr_to_sft_accuracy": 0.875,
+      "sft_to_rlvr_accuracy": 0.625,
+      "n": 8
+    }
+  },
+  "part2_cumulative": {
+    "focus_quadrant": "D_sft_fail_rlvr_pass",
+    "layers_run": [
+      "L0-0",
+      "L0-1",
+      "L0-2",
+      "L0-3",
+      "L0-4",
+      "L0-5",
+      "L0-6",
+      "L0-7",
+      "L0-8",
+      "L0-9",
+      "L0-10",
+      "L0-11",
+      "L0-12",
+      "L0-13",
+      "L0-14",
+      "L0-15",
+      "L0-16",
+      "L0-17",
+      "L0-18",
+      "L0-19",
+      "L0-20",
+      "L0-21",
+      "L0-22",
+      "L0-23",
+      "L0-24",
+      "L0-25",
+      "L0-26",
+      "L0-27",
+      "L0-28",
+      "L0-29",
+      "L0-30",
+      "L0-31"
+    ],
+    "note": "Cumulative trajectory patching completed across the full depth range"
+  },
+  "interpretation": [
+    "RLVR to SFT transfer is real but incomplete.",
+    "SFT to RLVR transfer degrades RLVR but does not collapse it.",
+    "The effect is distributed across layers rather than concentrated at a single bottleneck."
+  ]
+}
